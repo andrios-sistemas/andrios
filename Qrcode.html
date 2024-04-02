@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Scanner</title>
+</head>
+<body>
+    <button id="start-btn">Start Camera</button>
+    <video id="video" style="display: none;"></video>
+    <canvas id="canvas" style="display: none;"></canvas>
+
+    <script src="https://cdn.jsdelivr.net/npm/quagga/dist/quagga.min.js"></script>
+    <script>
+        const startBtn = document.getElementById('start-btn');
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const constraints = { video: { facingMode: 'environment' } };
+
+        startBtn.addEventListener('click', () => {
+            navigator.mediaDevices.getUserMedia(constraints)
+                .then((stream) => {
+                    video.srcObject = stream;
+                    video.onloadedmetadata = () => {
+                        video.play();
+                        startBtn.style.display = 'none';
+                        video.style.display = 'block';
+                        startQRScan(); // Start QR code scanning once the camera is started
+                    };
+                })
+                .catch((error) => {
+                    console.error('Error accessing camera:', error);
+                });
+        });
+
+        // Function to start QR code scanning
+        function startQRScan() {
+            const config = {
+                inputStream: {
+                    name: "Live",
+                    type: "LiveStream",
+                    target: video,
+                },
+                decoder: {
+                    readers: ["ean_reader", "ean_8_reader", "code_128_reader", "code_39_reader", "qr_reader"],
+                },
+            };
+
+            Quagga.init(config, function (err) {
+                if (err) {
+                    console.error(err);
+                    return;
+                }
+                Quagga.start();
+            });
+
+            Quagga.onDetected(function (result) {
+                const code = result.codeResult.code;
+                console.log("QR Code detected:", code);
+                alert("QR Code detected: " + code); // Display the detected QR code
+            });
+        }
+    </script>
+</body>
+</html>
