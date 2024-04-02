@@ -3,18 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR Code Scanner</title>
+    <title>QR Code Scanner with ZXing API</title>
 </head>
 <body>
     <button id="start-btn">Start Camera</button>
     <video id="video" style="display: none;"></video>
-    <canvas id="canvas" style="display: none;"></canvas>
 
-    <script src="https://cdn.jsdelivr.net/npm/quagga/dist/quagga.min.js"></script>
     <script>
         const startBtn = document.getElementById('start-btn');
         const video = document.getElementById('video');
-        const canvas = document.getElementById('canvas');
         const constraints = { video: { facingMode: 'environment' } };
 
         startBtn.addEventListener('click', () => {
@@ -35,32 +32,29 @@
 
         // Function to start QR code scanning
         function startQRScan() {
-            const config = {
-                inputStream: {
-                    name: "Live",
-                    type: "LiveStream",
-                    target: video,
-                    constraints: {
-                        facingMode: "environment" // Use the back camera
-                    }
-                },
-                decoder: {
-                    readers: ["ean_reader", "ean_8_reader", "code_128_reader", "code_39_reader", "qrcode_reader"],
-                },
-            };
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const imageDataURL = canvas.toDataURL('image/jpeg');
 
-            Quagga.init(config, function (err) {
-                if (err) {
-                    console.error(err);
-                    return;
-                }
-                Quagga.start();
-            });
-
-            Quagga.onDetected(function (result) {
-                const code = result.codeResult.code;
-                console.log("QR Code detected:", code);
-                alert("QR Code detected: " + code); // Display the detected QR code
+            // Send the image data to ZXing API for decoding
+            fetch('https://zxing.org/w/decode', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'f=upload&file=' + encodeURIComponent(imageDataURL),
+            })
+            .then(response => response.text())
+            .then(data => {
+                // Process the decoded result
+                console.log(data);
+                alert("QR Code detected: " + data);
+            })
+            .catch(error => {
+                console.error('Error decoding QR code:', error);
             });
         }
     </script>
