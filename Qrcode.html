@@ -74,7 +74,7 @@
             if (code) {
                 // Descartando conteúdo após o primeiro espaço.
                 const firstPartOnly = code.data.split(' ')[0];
-                const secondPart = code.data.split(' ')[1]; // Pegando a segunda parte
+                const secondPart = code.data.split(' ')[2]; // Pegando a segunda parte
                 document.getElementById('result').value = firstPartOnly;
                 document.getElementById('label-result').innerText = 'Segunda parte do QR Code: ' + secondPart; // Mostrando a segunda parte na label
             } else {
