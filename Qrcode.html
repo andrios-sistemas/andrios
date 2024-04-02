@@ -9,8 +9,9 @@
 <body>
     <h1>QR Code Scanner</h1>
     <button id="start-scan-btn">Ler QR Code</button>
+	<input type="text" id="result">
     <button id="capture-btn" style="display:none;">Capturar QR Code</button>
-    <div id="result"></div>
+    <!--<div id="result"></div>-->
     <video id="camera-preview" playsinline style="display: none;"></video>
     <canvas id="qr-canvas" style="display: none;"></canvas>
 
@@ -56,9 +57,9 @@
 
     // Processamento e exibição do resultado.
     if (code) {
-        document.getElementById('result').innerText = code.data;
+        document.getElementById('result').value = code.data;
     } else {
-        document.getElementById('result').innerText = 'Não foi possível detectar um QR code. Por favor, tente novamente.';
+        document.getElementById('result').value = 'Não foi possível detectar um QR code. Por favor, tente novamente.';
     }
 
     // Esconder o canvas imediatamente após a exibição do resultado.
