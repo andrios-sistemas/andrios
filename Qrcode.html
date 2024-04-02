@@ -43,30 +43,36 @@
                 });
         });
 
-        captureBtn.addEventListener('click', function() {
-            const ctx = qrCanvas.getContext('2d');
-            qrCanvas.width = cameraPreview.videoWidth;
-            qrCanvas.height = cameraPreview.videoHeight;
-            ctx.drawImage(cameraPreview, 0, 0, qrCanvas.width, qrCanvas.height);
+       captureBtn.addEventListener('click', function() {
+    // Configurações preliminares do canvas e contexto.
+    const ctx = qrCanvas.getContext('2d');
+    qrCanvas.width = cameraPreview.videoWidth;
+    qrCanvas.height = cameraPreview.videoHeight;
+    ctx.drawImage(cameraPreview, 0, 0, qrCanvas.width, qrCanvas.height);
 
-            const imageData = ctx.getImageData(0, 0, qrCanvas.width, qrCanvas.height);
-            const code = jsQR(imageData.data, imageData.width, imageData.height);
+    // Obtendo a imagem para processamento.
+    const imageData = ctx.getImageData(0, 0, qrCanvas.width, qrCanvas.height);
+    const code = jsQR(imageData.data, imageData.width, imageData.height);
 
-            if (code) {
-                document.getElementById('result').innerText = 'QR code detectado: ' + code.data;
-            } else {
-                document.getElementById('result').innerText = 'Não foi possível detectar um QR code. Por favor, tente novamente.';
-            }
+    // Processamento e exibição do resultado.
+    if (code) {
+        document.getElementById('result').innerText = code.data;
+    } else {
+        document.getElementById('result').innerText = 'Não foi possível detectar um QR code. Por favor, tente novamente.';
+    }
 
-            // Pause the video stream when QR code is captured
-            cameraPreview.pause();
-            captureBtn.style.display = 'none';
-            startScanBtn.style.display = 'block';
-            if (stream) {
-                let tracks = stream.getTracks();
-                tracks.forEach(track => track.stop());
-            }
-        });
+    // Esconder o canvas imediatamente após a exibição do resultado.
+    // Opção para esconder
+    // qrCanvas.style.display = 'none';
+
+    // Ou, para limpar o conteúdo do canvas
+    ctx.clearRect(0, 0, qrCanvas.width, qrCanvas.height);
+
+    // Ajustes finais após processamento.
+    cameraPreview.style.display = 'none'; // Esconder o vídeo.
+    captureBtn.style.display = 'none'; // Esconder o botão de captura.
+    startScanBtn.style.display = 'block'; // Mostrar botão para nova leitura.
+});
     </script>
 </body>
 </html>
