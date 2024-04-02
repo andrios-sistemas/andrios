@@ -40,9 +40,12 @@
                     name: "Live",
                     type: "LiveStream",
                     target: video,
+                    constraints: {
+                        facingMode: "environment" // Use the back camera
+                    }
                 },
                 decoder: {
-                    readers: ["ean_reader", "ean_8_reader", "code_128_reader", "code_39_reader", "qr_reader"],
+                    readers: ["ean_reader", "ean_8_reader", "code_128_reader", "code_39_reader", "qrcode_reader"],
                 },
             };
 
