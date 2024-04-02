@@ -3,60 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR Code Scanner with ZXing API</title>
+    <title>QR Code Scanner</title>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
 </head>
 <body>
-    <button id="start-btn">Start Camera</button>
-    <video id="video" style="display: none;"></video>
+    <h1>QR Code Scanner</h1>
+    <button id="start-scan-btn">Ler QR Code</button>
+    <button id="capture-btn" style="display:none;">Capturar QR Code</button>
+    <div id="result"></div>
+    <video id="camera-preview" playsinline style="display: none;"></video>
+    <canvas id="qr-canvas" style="display: none;"></canvas>
 
     <script>
-        const startBtn = document.getElementById('start-btn');
-        const video = document.getElementById('video');
-        const constraints = { video: { facingMode: 'environment' } };
+        const startScanBtn = document.getElementById('start-scan-btn');
+        const captureBtn = document.getElementById('capture-btn');
+        const cameraPreview = document.getElementById('camera-preview');
+        const qrCanvas = document.getElementById('qr-canvas');
+        let stream = null;
 
-        startBtn.addEventListener('click', () => {
+        startScanBtn.addEventListener('click', function() {
+            const constraints = { video: { facingMode: "environment" } };
+
             navigator.mediaDevices.getUserMedia(constraints)
-                .then((stream) => {
-                    video.srcObject = stream;
-                    video.onloadedmetadata = () => {
-                        video.play();
-                        startBtn.style.display = 'none';
-                        video.style.display = 'block';
-                        startQRScan(); // Start QR code scanning once the camera is started
+                .then(function(s) {
+                    stream = s;
+                    cameraPreview.srcObject = stream;
+                    cameraPreview.onloadedmetadata = function(e) {
+                        cameraPreview.play();
+                        cameraPreview.style.display = 'block';
+                        captureBtn.style.display = 'block';
+                        startScanBtn.style.display = 'none';
+                        qrCanvas.style.display = 'none';
+                        document.getElementById('result').innerText = '';
                     };
                 })
-                .catch((error) => {
-                    console.error('Error accessing camera:', error);
+                .catch(function(error) {
+                    console.error('Erro ao acessar câmera:', error);
+                    alert('Erro ao acessar câmera: ' + error);
                 });
         });
 
-        // Function to start QR code scanning
-        function startQRScan() {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            const imageDataURL = canvas.toDataURL('image/jpeg');
+        captureBtn.addEventListener('click', function() {
+            const ctx = qrCanvas.getContext('2d');
+            qrCanvas.width = cameraPreview.videoWidth;
+            qrCanvas.height = cameraPreview.videoHeight;
+            ctx.drawImage(cameraPreview, 0, 0, qrCanvas.width, qrCanvas.height);
 
-            // Send the image data to ZXing API for decoding
-            fetch('https://zxing.org/w/decode', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: 'f=upload&file=' + encodeURIComponent(imageDataURL),
-            })
-            .then(response => response.text())
-            .then(data => {
-                // Process the decoded result
-                console.log(data);
-                alert("QR Code detected: " + data);
-            })
-            .catch(error => {
-                console.error('Error decoding QR code:', error);
-            });
-        }
+            const imageData = ctx.getImageData(0, 0, qrCanvas.width, qrCanvas.height);
+            const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+            if (code) {
+                document.getElementById('result').innerText = 'QR code detectado: ' + code.data;
+            } else {
+                document.getElementById('result').innerText = 'Não foi possível detectar um QR code. Por favor, tente novamente.';
+            }
+
+            // Pause the video stream when QR code is captured
+            cameraPreview.pause();
+            captureBtn.style.display = 'none';
+            startScanBtn.style.display = 'block';
+            if (stream) {
+                let tracks = stream.getTracks();
+                tracks.forEach(track => track.stop());
+            }
+        });
     </script>
 </body>
 </html>
