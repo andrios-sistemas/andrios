@@ -6,6 +6,13 @@
     <title>QR Code Scanner</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
+	
+	<style>
+        #label-result {
+            font-weight: bold;
+        }
+    </style>
+	
 </head>
 <body class="bg-light">
     <div class="container py-5">
@@ -76,7 +83,7 @@
                 const firstPartOnly = code.data.split(' ')[0];
                 const secondPart = code.data.split(' ')[2]; // Pegando a segunda parte
                 document.getElementById('result').value = firstPartOnly;
-                document.getElementById('label-result').innerText = 'Segunda parte do QR Code: ' + secondPart; // Mostrando a segunda parte na label
+                document.getElementById('label-result').innerText = secondPart; // Mostrando a segunda parte na label
             } else {
                 document.getElementById('result').value = 'Não foi possível detectar um QR code. Por favor, tente novamente.';
                 document.getElementById('label-result').innerText = ''; // Limpa a label se nenhum QR code for detectado
