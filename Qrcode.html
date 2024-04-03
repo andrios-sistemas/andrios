@@ -6,22 +6,24 @@
     <title>QR Code Scanner</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
-    <style>
+	
+	<style>
         #label-result {
             font-weight: bold;
         }
     </style>
+	
 </head>
 <body class="bg-light">
     <div class="container py-5">
         <div class="row justify-content-center">
             <div class="col-md-6 text-center">
                 <h1 class="mb-3">QR Code Scanner</h1>
-                <div class="d-flex align-items-center justify-content-center">
-                        <label id="label-result" class="mb-2 align-self-center"></label>
-                        <input type="text" id="result" class="form-control mt-3">
+                <button id="start-scan-btn" style="display: block;" class="btn btn-primary">Ler QR Code</button>
+                <div class="mt-3">
+                    <label id="label-result" class="mb-2"></label> <!-- Nova label para mostrar a segunda parte do QR code -->
+                    <input type="text" id="result" class="form-control mt-3">
                 </div>
-				<button id="start-scan-btn" style="display: block;" class="btn btn-primary mt-3">Ler QRCode</button>
                 <button id="capture-btn" class="btn btn-success mt-3" style="display:none;">Capturar QR Code</button>
                 <div class="mt-3">
                     <video id="camera-preview" playsinline style="width: 100%; display: none;"></video>
@@ -79,9 +81,9 @@
             if (code) {
                 // Descartando conteúdo após o primeiro espaço.
                 const firstPartOnly = code.data.split(' ')[0];
-                const secondPart = code.data.split(' ')[1]; // Pegando a segunda parte
+                const secondPart = code.data.split(' ')[2]; // Pegando a segunda parte
                 document.getElementById('result').value = firstPartOnly;
-                document.getElementById('label-result').innerText = 'Segunda parte do QR Code: ' + secondPart; // Mostrando a segunda parte na label
+                document.getElementById('label-result').innerText = secondPart; // Mostrando a segunda parte na label
             } else {
                 document.getElementById('result').value = 'Não foi possível detectar um QR code. Por favor, tente novamente.';
                 document.getElementById('label-result').innerText = ''; // Limpa a label se nenhum QR code for detectado
