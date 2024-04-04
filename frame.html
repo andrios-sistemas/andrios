@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
-    <style>
+   <style>
         .photo-box img {
             max-width: 100%;
             max-height: 200px;
@@ -35,7 +35,7 @@
     </style>
 </head>
 <body>
-    <div class="container text-center">
+   <div class="container text-center">
     <div class="row">
         <div class="col-xs-12">
             <h1>Movimentação de Patrimônio</h1>
@@ -45,8 +45,6 @@
         <div class="col-md-6 col-md-offset-3">
                 <div class="form-group">
                     <div id="start-btn-container" class="form-group">
-                         <label for="patrimonio"><h3>Tirar Foto:</h3></label>
-						 <br>
                         <button id="start-btn" class="btn btn-primary">Iniciar Captura</button>
                         <button id="capture-btn" class="btn btn-success mt-3" style="display: none;">Capturar Foto</button>
                     </div>
@@ -57,7 +55,7 @@
                         <input id="image-hex" value="" type="hidden" name="imageHex">
                     </div>
                     <div class="form-group">
-                        <label for="patrimonio"><h3>Carregar Imagem:</h3></label>
+                        <label for="patrimonio"><h3>Fotografia:</h3></label>
                         <div id="photoBox" class="photo-box">Clique nos botões abaixo para adicionar uma foto.</div>
                         <br>
                         <button type="button" class="btn btn-default mt-3" onclick="document.getElementById('fileInput').click();">Escolher Foto do Arquivo</button>
@@ -75,63 +73,86 @@
     </div>
 
     <script>
-    document.addEventListener('DOMContentLoaded', function () {
-    let currentCamera = 'environment';
+        let currentCamera = 'environment'; // Alterado para câmera traseira por padrão
 
-    const startBtn = document.getElementById('start-btn');
-    const captureBtn = document.getElementById('capture-btn');
-    const video = document.getElementById('video');
-    const canvas = document.getElementById('canvas');
-    const capturedImg = document.getElementById('captured-img');
-
-    startBtn.addEventListener('click', async () => {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: currentCamera } });
-            video.srcObject = stream;
-            await video.play();
-            startBtn.style.display = 'none';
-            captureBtn.style.display = 'block';
-            video.style.display = 'block';
-        } catch (error) {
-            console.error('Erro ao acessar a câmera:', error);
+        function displayImageFromFile(event) {
+            if (event.target.files.length > 0) {
+                const file = event.target.files[0];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const src = URL.createObjectURL(file);
+                    const preview = document.getElementById('photoBox');
+                    preview.innerHTML = '<img src="' + src + '">';
+                    const base64 = e.target.result.split(',')[1];
+                    convertBase64ToHex(base64);
+                }
+                reader.readAsDataURL(file);
+            }
         }
-    });
 
-    captureBtn.addEventListener('click', () => {
-        captureImage();
-    });
+        function convertBase64ToHex(base64) {
+            const raw = atob(base64);
+            let hex = '';
+            for (let i = 0; i < raw.length; i++) {
+                const hexChar = raw.charCodeAt(i).toString(16);
+                hex += (hexChar.length === 2 ? hexChar : '0' + hexChar);
+            }
+            document.getElementById('imageHex2').value = hex;
+        }
 
-    function captureImage() {
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+        const startBtn = document.getElementById('start-btn');
+        const captureBtn = document.getElementById('capture-btn');
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const capturedImg = document.getElementById('captured-img');
 
-        canvas.toBlob((blob) => {
-            const formData = new FormData();
-            formData.append('imagem', blob, 'imagem.png');
-            const imageURL = URL.createObjectURL(blob);
-            capturedImg.src = imageURL;
-            capturedImg.style.display = 'block';
-            video.style.display = 'none';
-            captureBtn.style.display = 'none';
-            startBtn.style.display = 'block';
-
-            const canvasDataURL = canvas.toDataURL('image/png');
-            const imageHex = base64ToHex(canvasDataURL);
-            document.getElementById('image-hex').value = imageHex;
+        startBtn.addEventListener('click', async () => {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: currentCamera } });
+                video.srcObject = stream;
+                await video.play();
+                startBtn.style.display = 'none';
+                captureBtn.style.display = 'block';
+                video.style.display = 'block';
+            } catch (error) {
+                console.error('Erro ao acessar a câmera:', error);
+            }
         });
-    }
 
-    function base64ToHex(str) {
-        const raw = atob(str.split(",")[1]);
-        let result = '';
-        for (let i = 0; i < raw.length; i++) {
-            const hex = raw.charCodeAt(i).toString(16).padStart(2, '0');
-            result += hex;
+        captureBtn.addEventListener('click', () => {
+            captureImage();
+        });
+
+        function captureImage() {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            canvas.toBlob((blob) => {
+                const formData = new FormData();
+                formData.append('imagem', blob, 'imagem.png');
+                const imageURL = URL.createObjectURL(blob);
+                capturedImg.src = imageURL;
+                capturedImg.style.display = 'block';
+                video.style.display = 'none';
+                captureBtn.style.display = 'none';
+                startBtn.style.display = 'block';
+
+                const canvasDataURL = canvas.toDataURL('image/png');
+                const imageHex = base64ToHex(canvasDataURL);
+                document.getElementById('image-hex').value = imageHex;
+            });
         }
-        return result.toUpperCase();
-    }
-});
+
+        function base64ToHex(str) {
+            const raw = atob(str.split(",")[1]);
+            let result = '';
+            for (let i = 0; i < raw.length; i++) {
+                const hex = raw.charCodeAt(i).toString(16).padStart(2, '0');
+                result += hex;
+            }
+            return result.toUpperCase();
+        }
     </script>
 </body>
 </html>
