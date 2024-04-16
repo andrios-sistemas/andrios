@@ -1,100 +1,131 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR Code Scanner</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <title>Movimentação de Patrimônio</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
-	
-	<style>
-        #label-result {
-            font-weight: bold;
+    
+    <style>
+        video#camera-preview {
+            max-width: 100%; 
+            height: auto; 
+            border-radius: 8px;
+            margin-top: 10px;
         }
     </style>
-	
 </head>
-<body class="bg-light">
-    <div class="container py-5">
-        <div class="row justify-content-center">
-            <div class="col-md-6 text-center">
-                <h1 class="mb-3">QR Code Scanner</h1>
-                
-                <div class="mt-3">
-                    <label id="label-result" class="mb-2"></label> <!-- Nova label para mostrar a segunda parte do QR code -->
-                    <input type="text" id="result" class="form-control mt-3">
-                </div>
-		<button id="start-scan-btn" style="display: block;" class="btn btn-primary mt-3">Ler QR Code</button>
-                <button id="capture-btn" class="btn btn-success mt-3" style="display:none;">Capturar QR Code</button>
-                <div class="mt-3">
-                    <video id="camera-preview" playsinline style="width: 100%; display: none;"></video>
-                </div>
-                <canvas id="qr-canvas" style="display: none;"></canvas>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 col-md-offset-3">
+                <h2>Movimentação de Patrimônio - Iniciar</h2>
+                <form action="processar_movimento.php" method="post" id="formMovimentacao">
+                    <div >
+                        <div class="mt-3">
+                            <label id="label-result" class="mb-2"></label> <!-- Nova label para mostrar a segunda parte do QR code -->       
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="id_patrimonio">Patrimônio:</label>
+                        <input type="text" class="form-control" id="id_patrimonio" name="id_patrimonio" placeholder="Identificação do patrimônio" required>
+                    </div>
+                    <button id="start-scan-btn" style="display: block;" class="btn btn-primary">Ler QR Code</button>
+                    <br>
+                    <button id="capture-btn" class="btn btn-success" style="display:none;">Capturar QR Code</button>
+                    <div class="mt-3">
+                        <video id="camera-preview" playsinline style="display: none;"></video>
+                    </div>
+                    <canvas id="qr-canvas" style="display: none;"></canvas>
+                    <div class="form-group">
+                        <label for="cd_local_atual">Local Atual:</label>
+                        <select class="form-control" id="cd_local_atual" name="cd_local_atual" placeholder="Local atual do patrimônio" required>
+                            <!-- Aqui o local atual será preenchido automaticamente -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="cd_local">Local de Destino:</label>
+                        <select class="form-control" id="cd_local" name="cd_local" placeholder="Local de destino do patrimônio" required>
+                            <option value=""></option>
+                            <?php
+                            $sql="SELECT cd_local,desc_local FROM local;";
+                            $resultado = mysqli_query($con, $sql);
+                            while($row = mysqli_fetch_assoc($resultado)) {
+                                echo '<option value="'.$row['cd_local'].'">'.$row['cd_local']. ' - '.$row['desc_local'].'</option>';
+                            } 
+                            ?>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Gravar</button>
+                </form>
             </div>
+            
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
-        const startScanBtn = document.getElementById('start-scan-btn');
-        const captureBtn = document.getElementById('capture-btn');
-        const cameraPreview = document.getElementById('camera-preview');
-        const qrCanvas = document.getElementById('qr-canvas');
-        let stream = null;
+        $(document).ready(function(){
+            let stream = null;
+            const cameraPreview = document.getElementById('camera-preview');
+            const qrCanvas = document.getElementById('qr-canvas');
+            const captureBtn = document.getElementById('capture-btn');
+            const startScanBtn = document.getElementById('start-scan-btn');
+            let intervalId = null;
 
-        startScanBtn.addEventListener('click', function() {
-            const constraints = { video: { facingMode: "environment" } };
+            startScanBtn.addEventListener('click', function() {
+                const constraints = { video: { facingMode: "environment" } };
 
-            navigator.mediaDevices.getUserMedia(constraints)
-                .then(function(s) {
-                    stream = s;
-                    cameraPreview.srcObject = stream;
-                    cameraPreview.onloadedmetadata = function(e) {
-                        cameraPreview.play();
-                        cameraPreview.style.display = 'block';
-                        captureBtn.style.display = 'block';
-                        startScanBtn.style.display = 'none';
-                        qrCanvas.style.display = 'none';
-                        document.getElementById('result').value = ''; // Limpa o resultado anterior
-                        document.getElementById('label-result').innerText = ''; // Limpa a label anterior
-                    };
-                })
-                .catch(function(error) {
-                    console.error('Erro ao acessar câmera:', error);
-                    alert('Erro ao acessar câmera: ' + error);
-                });
-        });
+                navigator.mediaDevices.getUserMedia(constraints)
+                    .then(function(s) {
+                        stream = s;
+                        cameraPreview.srcObject = stream;
+                        cameraPreview.onloadedmetadata = function(e) {
+                            cameraPreview.play();
+                            cameraPreview.style.display = 'block';
+                            startScanBtn.style.display = 'none';
+                            intervalId = setInterval(checkForQRCode, 1000); // Verifica a cada segundo
+                        };
+                    })
+                    .catch(function(error) {
+                        console.error('Erro ao acessar câmera:', error);
+                        alert('Erro ao acessar câmera: ' + error);
+                    });
+            });
 
-       captureBtn.addEventListener('click', function() {
-            // Configurações preliminares do canvas e contexto.
-            const ctx = qrCanvas.getContext('2d');
-            qrCanvas.width = cameraPreview.videoWidth;
-            qrCanvas.height = cameraPreview.videoHeight;
-            ctx.drawImage(cameraPreview, 0, 0, qrCanvas.width, qrCanvas.height);
+            captureBtn.addEventListener('click', function() {
+                clearInterval(intervalId); // Parar de verificar quando o botão de captura é clicado
+                // Restante do código para capturar e processar o QR code...
+            });
 
-            // Obtendo a imagem para processamento.
-            const imageData = ctx.getImageData(0, 0, qrCanvas.width, qrCanvas.height);
-            const code = jsQR(imageData.data, imageData.width, imageData.height);
+            function checkForQRCode() {
+                const ctx = qrCanvas.getContext('2d');
+                qrCanvas.width = cameraPreview.videoWidth;
+                qrCanvas.height = cameraPreview.videoHeight;
+                ctx.drawImage(cameraPreview, 0, 0, qrCanvas.width, qrCanvas.height);
 
-            // Processamento e exibição do resultado.
-            if (code) {
-                // Descartando conteúdo após o primeiro espaço.
-                const firstPartOnly = code.data.split(' ')[0];
-                const secondPart = code.data.split(' ')[2]; // Pegando a segunda parte
-                document.getElementById('result').value = firstPartOnly;
-                document.getElementById('label-result').innerText = 'Descrição: ' + secondPart; // Mostrando a segunda parte na label
-            } else {
-                document.getElementById('result').value = 'Não foi possível detectar um QR code. Por favor, tente novamente.';
-                document.getElementById('label-result').innerText = ''; // Limpa a label se nenhum QR code for detectado
+                const imageData = ctx.getImageData(0, 0, qrCanvas.width, qrCanvas.height);
+                const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+                if (code) {
+                    clearInterval(intervalId); // Parar de verificar se um QR code foi detectado
+                    const firstPartOnly = code.data.split(' ')[0];
+                    const secondPart = code.data.split(' ')[2];
+                    document.getElementById('id_patrimonio').value = firstPartOnly;
+                    document.getElementById('label-result').innerText = 'Descrição: ' + secondPart;
+
+                    // Executar AJAX para buscar o local atual do patrimônio
+                    $.ajax({
+                        url: 'buscar_local_atual.php',
+                        type: 'POST',
+                        data: {id_patrimonio: firstPartOnly},
+                        success: function(response){
+                            $('#cd_local_atual').html(response);
+                        }
+                    });
+                }
             }
-
-            // Limpar o conteúdo do canvas e fazer ajustes finais.
-            ctx.clearRect(0, 0, qrCanvas.width, qrCanvas.height);
-            cameraPreview.style.display = 'none'; // Esconder o vídeo.
-            captureBtn.style.display = 'none'; // Esconder o botão de captura.
-            startScanBtn.style.display = 'block'; // Mostrar botão para nova leitura.
         });
     </script>
 </body>
