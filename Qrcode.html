@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
     
     <style>
         video#camera-preview {
@@ -35,6 +37,7 @@
                     <button id="start-scan-btn" style="display: block;" class="btn btn-primary">Ler QR Code</button>
                     <br>
                     <button id="capture-btn" class="btn btn-success" style="display:none;">Capturar QR Code</button>
+                    <button id="stop-scan-btn" class="btn btn-danger" style="display:none;">Fechar Câmera</button> <!-- Botão para fechar a câmera -->
                     <div class="mt-3">
                         <video id="camera-preview" playsinline style="display: none;"></video>
                     </div>
@@ -72,6 +75,7 @@
             const qrCanvas = document.getElementById('qr-canvas');
             const captureBtn = document.getElementById('capture-btn');
             const startScanBtn = document.getElementById('start-scan-btn');
+            const stopScanBtn = document.getElementById('stop-scan-btn'); // Botão para fechar a câmera
             let intervalId = null;
 
             startScanBtn.addEventListener('click', function() {
@@ -85,6 +89,7 @@
                             cameraPreview.play();
                             cameraPreview.style.display = 'block';
                             startScanBtn.style.display = 'none';
+                            stopScanBtn.style.display = 'block'; // Mostra o botão para fechar a câmera
                             intervalId = setInterval(checkForQRCode, 1000); // Verifica a cada segundo
                         };
                     })
@@ -98,6 +103,23 @@
                 clearInterval(intervalId); // Parar de verificar quando o botão de captura é clicado
                 // Restante do código para capturar e processar o QR code...
             });
+
+            stopScanBtn.addEventListener('click', function() {
+                stopCamera(); // Chama a função para fechar a câmera
+            });
+
+            function stopCamera() {
+                if (stream) {
+                    const tracks = stream.getTracks();
+                    tracks.forEach(function(track) {
+                        track.stop(); // Para todas as faixas de mídia
+                    });
+                    cameraPreview.style.display = 'none'; // Esconde o vídeo
+                    stopScanBtn.style.display = 'none'; // Esconde o botão para fechar a câmera
+                    startScanBtn.style.display = 'block'; // Mostra o botão para abrir a câmera
+                    clearInterval(intervalId); // Para a verificação do QR code
+                }
+            }
 
             function checkForQRCode() {
                 const ctx = qrCanvas.getContext('2d');
