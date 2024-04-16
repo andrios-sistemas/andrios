@@ -6,8 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     
     <style>
         video#camera-preview {
@@ -20,37 +19,29 @@
 </head>
 <body>
     <div class="container">
-        <div class="row">
-            <div class="col-md-6 col-md-offset-3">
-                <h2>Movimentação de Patrimônio - Iniciar</h2>
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <h2 class="text-center">Movimentação de Patrimônio - Iniciar</h2>
                 <form action="processar_movimento.php" method="post" id="formMovimentacao">
-                    <div >
-                        <div class="mt-3">
-                            <label id="label-result" class="mb-2"></label> <!-- Nova label para mostrar a segunda parte do QR code -->       
-                        </div>
-                    </div>
-                    
                     <div class="form-group">
                         <label for="id_patrimonio">Patrimônio:</label>
                         <input type="text" class="form-control" id="id_patrimonio" name="id_patrimonio" placeholder="Identificação do patrimônio" required>
                     </div>
-                    <button id="start-scan-btn" style="display: block;" class="btn btn-primary">Ler QR Code</button>
-                    <br>
-                    <button id="capture-btn" class="btn btn-success" style="display:none;">Capturar QR Code</button>
-                    <button id="stop-scan-btn" class="btn btn-danger" style="display:none;">Fechar Câmera</button> <!-- Botão para fechar a câmera -->
+                    <button id="start-scan-btn" class="btn btn-primary">Ler QR Code</button>
+                    <button id="stop-scan-btn" class="btn btn-danger" style="display:none;">Fechar Câmera</button>
                     <div class="mt-3">
                         <video id="camera-preview" playsinline style="display: none;"></video>
                     </div>
                     <canvas id="qr-canvas" style="display: none;"></canvas>
                     <div class="form-group">
                         <label for="cd_local_atual">Local Atual:</label>
-                        <select class="form-control" id="cd_local_atual" name="cd_local_atual" placeholder="Local atual do patrimônio" required>
+                        <select class="form-control" id="cd_local_atual" name="cd_local_atual" required>
                             <!-- Aqui o local atual será preenchido automaticamente -->
                         </select>
                     </div>
                     <div class="form-group">
                         <label for="cd_local">Local de Destino:</label>
-                        <select class="form-control" id="cd_local" name="cd_local" placeholder="Local de destino do patrimônio" required>
+                        <select class="form-control" id="cd_local" name="cd_local" required>
                             <option value=""></option>
                             <?php
                             $sql="SELECT cd_local,desc_local FROM local;";
@@ -73,9 +64,8 @@
             let stream = null;
             const cameraPreview = document.getElementById('camera-preview');
             const qrCanvas = document.getElementById('qr-canvas');
-            const captureBtn = document.getElementById('capture-btn');
             const startScanBtn = document.getElementById('start-scan-btn');
-            const stopScanBtn = document.getElementById('stop-scan-btn'); // Botão para fechar a câmera
+            const stopScanBtn = document.getElementById('stop-scan-btn');
             let intervalId = null;
 
             startScanBtn.addEventListener('click', function() {
@@ -89,8 +79,8 @@
                             cameraPreview.play();
                             cameraPreview.style.display = 'block';
                             startScanBtn.style.display = 'none';
-                            stopScanBtn.style.display = 'block'; // Mostra o botão para fechar a câmera
-                            intervalId = setInterval(checkForQRCode, 1000); // Verifica a cada segundo
+                            stopScanBtn.style.display = 'block';
+                            intervalId = setInterval(checkForQRCode, 1000);
                         };
                     })
                     .catch(function(error) {
@@ -99,25 +89,20 @@
                     });
             });
 
-            captureBtn.addEventListener('click', function() {
-                clearInterval(intervalId); // Parar de verificar quando o botão de captura é clicado
-                // Restante do código para capturar e processar o QR code...
-            });
-
             stopScanBtn.addEventListener('click', function() {
-                stopCamera(); // Chama a função para fechar a câmera
+                stopCamera();
             });
 
             function stopCamera() {
                 if (stream) {
                     const tracks = stream.getTracks();
                     tracks.forEach(function(track) {
-                        track.stop(); // Para todas as faixas de mídia
+                        track.stop();
                     });
-                    cameraPreview.style.display = 'none'; // Esconde o vídeo
-                    stopScanBtn.style.display = 'none'; // Esconde o botão para fechar a câmera
-                    startScanBtn.style.display = 'block'; // Mostra o botão para abrir a câmera
-                    clearInterval(intervalId); // Para a verificação do QR code
+                    cameraPreview.style.display = 'none';
+                    stopScanBtn.style.display = 'none';
+                    startScanBtn.style.display = 'block';
+                    clearInterval(intervalId);
                 }
             }
 
@@ -131,7 +116,7 @@
                 const code = jsQR(imageData.data, imageData.width, imageData.height);
 
                 if (code) {
-                    clearInterval(intervalId); // Parar de verificar se um QR code foi detectado
+                    stopCamera(); // Fecha a câmera quando um QR code é detectado
                     const firstPartOnly = code.data.split(' ')[0];
                     const secondPart = code.data.split(' ')[2];
                     document.getElementById('id_patrimonio').value = firstPartOnly;
