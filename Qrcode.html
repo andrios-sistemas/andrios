@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -10,7 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
     
     <style>
-       video#camera-preview {
+        video#camera-preview {
             max-width: 100%; 
             height: auto; 
             border-radius: 8px;
@@ -99,13 +97,7 @@
                         <button id="close-camera-dest-btn" style="display: none;" class="btn btn-danger">Fechar Câmera do Local de Destino</button>
                         <select class="form-control" id="cd_local" name="cd_local" placeholder="Local de destino do patrimônio" required>
                             <option value=""></option>
-                            <?php
-                            $sql = "SELECT cd_local FROM local WHERE cd_local='inserir aqui o código lido pelo QRcode';";
-                            $resultado = mysqli_query($con, $sql);
-                            while ($row = mysqli_fetch_assoc($resultado)) {
-                                echo '<option value="' . $row['cd_local'] . '">Cód: ' . $row['cd_local'] . '</option>';
-                            }
-                            ?>
+                           
                         </select>
                     </div>
                     <button type="submit" class="btn btn-primary">Gravar</button>
