@@ -1,19 +1,3 @@
-<?php
-include('session.php');
-
-if (!(isset($_SESSION["nif"]) && isset($_SESSION["acesso"]) && $_SESSION["acesso"] >= 1)) {
-    header('Location: menu.php');
-}
-
-if (!include("Xa14Raty8ba22.php")) {
-    die('Arquivo de configurações indisponível!');
-}
-$con = mysqli_connect($xdb_server, $xdb_user, $xdb_pass, $xdb_name);
-if (!$con) {
-    die('Conector inativo: ' . mysqli_connect_error());
-}
-?>
-
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
