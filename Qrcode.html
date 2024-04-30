@@ -1,18 +1,4 @@
-<?php
-include('session.php');
 
-if (!(isset($_SESSION["nif"]) && isset($_SESSION["acesso"]) && $_SESSION["acesso"] >= 1)) {
-    header('Location: menu.php');
-}
-
-if (!include("Xa14Raty8ba22.php")) {
-    die('Arquivo de configurações indisponível!');
-}
-$con = mysqli_connect($xdb_server, $xdb_user, $xdb_pass, $xdb_name);
-if (!$con) {
-    die('Conector inativo: ' . mysqli_connect_error());
-}
-?>
 
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -24,7 +10,57 @@ if (!$con) {
     <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
     
     <style>
-        /* Estilos CSS */
+       video#camera-preview {
+            max-width: 100%; 
+            height: auto; 
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        /* Estilo para o loader */
+        #loader-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); /* Fundo semi-transparente */
+            display: none; /* Inicialmente oculto */
+            z-index: 9999; /* Z-index alto para garantir que o loader fique acima de outros elementos */
+        }
+
+        #loader {
+            border: 16px solid #f3f3f3; /* Light grey */
+            border-top: 16px solid #FF0000; /* vermelho */
+            border-radius: 50%;
+            width: 120px;
+            height: 120px;
+            animation: spin 2s linear infinite; /* Animação de rotação */
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            margin-top: -60px;
+            margin-left: -60px;
+        }
+
+        #loader-text {
+            color: white;
+            font-size: 18px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        #loader-info {
+            color: white;
+            font-size: 16px;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
