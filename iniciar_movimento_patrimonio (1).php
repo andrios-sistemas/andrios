@@ -1,19 +1,3 @@
-<?php
-include('session.php');
-
-if (!(isset($_SESSION["nif"]) && isset($_SESSION["acesso"]) && $_SESSION["acesso"] >= 1)) {
-    header('Location: menu.php');
-}
-
-if (!include("Xa14Raty8ba22.php")) {
-    die('Arquivo de configurações indisponível!');
-}
-$con = mysqli_connect($xdb_server, $xdb_user, $xdb_pass, $xdb_name);
-if (!$con) {
-    die('Conector inativo: ' . mysqli_connect_error());
-}
-?>
-
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -24,7 +8,7 @@ if (!$con) {
     <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
     
     <style>
-        video#camera-preview {
+       video#camera-preview {
             max-width: 100%; 
             height: auto; 
             border-radius: 8px;
@@ -205,4 +189,3 @@ if (!$con) {
     </script>
 </body>
 </html>
-
